@@ -1,20 +1,25 @@
-use anyhow::Result;
+mod git;
+
+use anyhow::{anyhow, Result};
 use clap::{App, Arg, ArgMatches};
 use std::{
     collections::HashMap,
     env,
+    io::Read,
     fs::{self, File},
     path::PathBuf,
     string::ToString,
 };
+use serde::{Serialize, Deserialize};
 use toml::Value;
 
 const CONFIG: &str = ".temploy.toml";
 
 /// Holds all of the parameters for the new project that will be generated
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectParameters {
-    target_dir: PathBuf,
-    template_path: Option<PathBuf>,
+    target_dir: Option<PathBuf>,
+    template_path: PathBuf,
     name: Option<String>,
 }
 
