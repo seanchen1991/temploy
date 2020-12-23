@@ -24,6 +24,7 @@ pub struct ProjectParameters {
 }
 
 impl ProjectParameters {
+    /// Initializes a ProjectParameters instance from CLI arguments 
     pub fn from_cli(matches: &ArgMatches) -> Result<Self> {
         let mut template_path = matches.value_of("template").unwrap().to_string();
         let mut project_parameters: ProjectParameters = {
@@ -54,6 +55,23 @@ impl ProjectParameters {
         project_parameters.name = matches.value_of("name").map(String::from);
 
         Ok(project_parameters)
+    }
+
+    pub fn generate(&self) -> Result<()> {
+        let mut params: HashMap<String, Value> = self.fetch_params()?; 
+        let project_name = match &self.project_name {
+            Some(name) => name.clone(),
+            None => Input::new()
+                .with_prompt("Specify a name for your generated project: ")
+                .interact()?,
+        };
+
+        let dir_path = self.create_dir(&project_name)?;
+
+        params.insert(String::from("target_dir"), Value::String(dir_path.to_str().unwrap_or_default().to_string()));
+        params.insert(String::from("name", Value::String(project_name.clone()));
+
+        
     }
 }
 
