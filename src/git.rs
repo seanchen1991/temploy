@@ -36,6 +36,14 @@ pub(crate) fn clone(
                 password.as_deref(),
             )
         });
+
+        let foptions = git2::FetchOptions::new();
+        foptions.remote_callbacks(callbacks);
+
+        let mut repo_builder = git2::build::RepoBuilder::new();
+        repo_builder.fetch_options(foptions);
+
+        repo_builder.clone(repo, &target_dir)?;
     }
 
     Ok(())

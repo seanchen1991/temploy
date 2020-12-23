@@ -7,11 +7,12 @@ use std::{
     env,
     io::Read,
     fs::{self, File},
-    path::PathBuf,
+    path::{Component, PathBuf},
     string::ToString,
 };
 use serde::{Serialize, Deserialize};
 use toml::Value;
+use dialoguer::{Input, Select};
 
 const CONFIG: &str = ".temploy.toml";
 
@@ -71,7 +72,20 @@ impl ProjectParameters {
         params.insert(String::from("target_dir"), Value::String(dir_path.to_str().unwrap_or_default().to_string()));
         params.insert(String::from("name", Value::String(project_name.clone()));
 
-        
+        let entries = WalkDir::new(&self.template_path)
+            .into_iter()
+            .filter_entry(|e| {
+                if e.path()
+                    .components()
+                    .any(|c| c == Component::Normal(".git".as_ref())) 
+                {
+                    return false;        
+                }
+
+                if e.file_name() == CONFIG {
+                    return false;
+                }
+            });
     }
 }
 
