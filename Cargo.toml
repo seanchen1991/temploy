@@ -11,6 +11,8 @@ anyhow = "1.0.36"
 clap = "2.33.3"
 dialoguer = "0.7.1"
 git2 = "0.13.14"
+heck = "0.3.2"
 md5 = "0.7.0"
 serde = { version = "1.0.118", features = ["derive"] }
 toml = "0.5.8"
+walkdir = "2.3.1"
