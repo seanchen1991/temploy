@@ -1,5 +1,5 @@
 use anyhow::Result;
-use git2::{Cred, Repository, RemoteCallbacks};
+use git2::{Cred, RemoteCallbacks, Repository};
 use std::{
     env,
     path::{Path, PathBuf},

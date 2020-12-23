@@ -14,5 +14,6 @@ git2 = "0.13.14"
 heck = "0.3.2"
 md5 = "0.7.0"
 serde = { version = "1.0.118", features = ["derive"] }
+thiserror = "1.0.22"
 toml = "0.5.8"
 walkdir = "2.3.1"

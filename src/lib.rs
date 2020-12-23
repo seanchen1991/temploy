@@ -1,18 +1,19 @@
 mod git;
 
-use anyhow::{anyhow, Result, Context};
+use anyhow::{anyhow, Context, Result};
 use clap::{App, Arg, ArgMatches};
+use dialoguer::Input;
+use heck::KebabCase;
+use serde::{Deserialize, Serialize};
 use std::{
     env,
-    io::Read,
     fs::{self, File},
+    io::Read,
     path::{Component, PathBuf},
     string::ToString,
 };
-use serde::{Serialize, Deserialize};
-use dialoguer::Input;
+use thiserror::Error;
 use walkdir::WalkDir;
-use heck::KebabCase;
 
 const CONFIG: &str = ".temploy.toml";
 
@@ -25,7 +26,7 @@ pub struct ProjectParameters {
 }
 
 impl ProjectParameters {
-    /// Initializes a ProjectParameters instance from CLI arguments 
+    /// Initializes a ProjectParameters instance from CLI arguments
     pub fn from_cli(matches: &ArgMatches) -> Result<Self> {
         let mut template_path = matches.value_of("template").unwrap().to_string();
         let mut project_parameters: ProjectParameters = {
@@ -58,15 +59,20 @@ impl ProjectParameters {
         Ok(project_parameters)
     }
 
+    /// Creates the directory where the generated project will live
     fn create_dir(&self, name: &str) -> Result<PathBuf> {
-        let mut dir_path = self.target_dir
+        let mut dir_path = self
+            .target_dir
             .clone()
             .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| ".".into()));
 
         dir_path = dir_path.join(name.to_kebab_case());
 
         if dir_path.exists() {
-            return Err(anyhow!("Failed to create {} since it already exists", dir_path.to_string_lossy()));
+            return Err(anyhow!(
+                "Failed to create {} since it already exists",
+                dir_path.to_string_lossy()
+            ));
         }
 
         fs::create_dir_all(&dir_path).with_context(|| "Cannot create directory")?;
@@ -76,6 +82,7 @@ impl ProjectParameters {
         Ok(path)
     }
 
+    /// Generates the project from the specified template project
     pub fn generate(&self) -> Result<()> {
         let project_name = match &self.name {
             Some(name) => name.clone(),
@@ -91,14 +98,14 @@ impl ProjectParameters {
             .filter_entry(|e| {
                 if e.path()
                     .components()
-                    .any(|c| c == Component::Normal(".git".as_ref())) 
+                    .any(|c| c == Component::Normal(".git".as_ref()))
                 {
-                    return false;        
+                    return false;
                 }
 
                 !(e.file_name() == CONFIG)
             });
-        
+
         println!("Generating project...");
 
         for e in entries {
@@ -124,8 +131,8 @@ impl ProjectParameters {
             let mut content = String::new();
 
             {
-                let mut file = File::open(filename)
-                    .map_err(|err| anyhow!("Cannot open file: {}", err))?;
+                let mut file =
+                    File::open(filename).map_err(|err| anyhow!("Cannot open file: {}", err))?;
                 file.read_to_string(&mut content)
                     .map_err(|err| anyhow!("Cannot read file: {}", err))?;
             }
