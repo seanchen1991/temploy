@@ -9,6 +9,8 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.36"
 clap = "2.33.3"
-toml = "0.5.8"
+dialoguer = "0.7.1"
+git2 = "0.13.14"
 md5 = "0.7.0"
 serde = { version = "1.0.118", features = ["derive"] }
+toml = "0.5.8"
