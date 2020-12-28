@@ -63,7 +63,9 @@ impl ProjectParameters {
         let mut gh_repo_name = None;
         let mut template_path = args.value_of("template").unwrap().to_string();
 
-        // handle template from a github repo
+        // a github repo was specified
+        // clone down the contents of the repo into a temp directory
+        // TODO: Change this flow so that it only makes one directory-creation pass
         if template_path.ends_with(".git") {
             let temp_dir = env::temp_dir().join(format!("{:x}", md5::compute(&template_path))); 
 
@@ -116,6 +118,7 @@ impl ProjectParameters {
             Some(name) => name.clone(),
             None => {
                 if self.gh_repo_name.is_some() {
+                    // get the name of the github repo 
                     let template_path_str = self.gh_repo_name.as_ref().unwrap().clone();
                     let mut repo_name = template_path_str
                         .split("/")
@@ -128,8 +131,8 @@ impl ProjectParameters {
                         .nth(0)
                         .ok_or_else(|| anyhow!(TemployError::InvalidGithubLink { link: template_path_str.clone() }))
                         .unwrap();
-
-                    repo_name.to_string()
+                    
+                    format!("{}{}", repo_name, DEFAULT_IDENT)
                 } else {
                     // no name provided, get the filename from the template path 
                     let path = Path::new(&self.template_path);
