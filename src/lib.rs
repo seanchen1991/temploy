@@ -33,7 +33,7 @@ pub enum TemployError {
     /// Represents an invalid template path
     #[error("Invalid template path specified: {path:?}")]
     InvalidTemplatePath { path: PathBuf },
-    /// Represents an incorrectly-formatted template path 
+    /// Represents an incorrectly-formatted template path
     #[error("Specified template path {path:?} is not of the expected format")]
     InvalidTemplatePathFormat { path: PathBuf },
     #[error("Failed to create directory {name:?} because it already exists")]
@@ -58,7 +58,7 @@ pub enum TemployError {
 }
 
 impl ProjectParameters {
-    /// Initializes a `ProjectParameters` instance from CLI arguments 
+    /// Initializes a `ProjectParameters` instance from CLI arguments
     pub fn from_cli(args: &ArgMatches) -> Result<Self> {
         let mut gh_repo_name = None;
         let mut template_path = args.value_of("template").unwrap().to_string();
@@ -67,7 +67,7 @@ impl ProjectParameters {
         // clone down the contents of the repo into a temp directory
         // TODO: Change this flow so that it only makes one directory-creation pass
         if template_path.ends_with(".git") {
-            let temp_dir = env::temp_dir().join(format!("{:x}", md5::compute(&template_path))); 
+            let temp_dir = env::temp_dir().join(format!("{:x}", md5::compute(&template_path)));
 
             if temp_dir.exists() {
                 fs::remove_dir_all(&temp_dir)
@@ -83,7 +83,7 @@ impl ProjectParameters {
             gh_repo_name = Some(template_path.to_string());
             template_path = temp_dir.to_string_lossy().to_string();
         }
-        
+
         Ok(ProjectParameters {
             target_dir: args.value_of("target-directory").map(PathBuf::from),
             template_path: PathBuf::from(template_path),
@@ -91,21 +91,23 @@ impl ProjectParameters {
             gh_repo_name,
         })
     }
-    
-    /// Attempts to create the directory where the generated project will live 
+
+    /// Attempts to create the directory where the generated project will live
     fn create_dir(&self, dir_name: &str) -> Result<PathBuf> {
-        let mut dir_path = self.target_dir
+        let mut dir_path = self
+            .target_dir
             .clone()
             .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| ".".into()));
 
         dir_path = dir_path.join(dir_name.to_kebab_case());
 
         if dir_path.exists() {
-            return Err(anyhow!(TemployError::DirAlreadyExists { name: dir_path.to_string_lossy().to_string() }));
+            return Err(anyhow!(TemployError::DirAlreadyExists {
+                name: dir_path.to_string_lossy().to_string()
+            }));
         }
 
-        fs::create_dir_all(&dir_path)
-            .map_err(|_| anyhow!(TemployError::FailedToCreateDir))?;
+        fs::create_dir_all(&dir_path).map_err(|_| anyhow!(TemployError::FailedToCreateDir))?;
 
         let path = fs::canonicalize(dir_path)
             .map_err(|_| anyhow!(TemployError::FailedToCanonicalizeDir))?;
@@ -118,29 +120,39 @@ impl ProjectParameters {
             Some(name) => name.clone(),
             None => {
                 if self.gh_repo_name.is_some() {
-                    // get the name of the github repo 
+                    // get the name of the github repo
                     let template_path_str = self.gh_repo_name.as_ref().unwrap().clone();
                     let mut repo_name = template_path_str
                         .split("/")
                         .last()
-                        .ok_or_else(|| anyhow!(TemployError::InvalidGithubLink { link: template_path_str.clone() }))
+                        .ok_or_else(|| {
+                            anyhow!(TemployError::InvalidGithubLink {
+                                link: template_path_str.clone()
+                            })
+                        })
                         .unwrap();
 
                     repo_name = repo_name
                         .split(".")
                         .nth(0)
-                        .ok_or_else(|| anyhow!(TemployError::InvalidGithubLink { link: template_path_str.clone() }))
+                        .ok_or_else(|| {
+                            anyhow!(TemployError::InvalidGithubLink {
+                                link: template_path_str.clone()
+                            })
+                        })
                         .unwrap();
-                    
+
                     format!("{}{}", repo_name, DEFAULT_IDENT)
                 } else {
-                    // no name provided, get the filename from the template path 
+                    // no name provided, get the filename from the template path
                     let path = Path::new(&self.template_path);
-                    
+
                     if path.is_dir() {
                         path.join(DEFAULT_IDENT).to_string_lossy().to_string()
                     } else {
-                        return Err(anyhow!(TemployError::InvalidTemplatePath { path: path.to_path_buf() }));
+                        return Err(anyhow!(TemployError::InvalidTemplatePath {
+                            path: path.to_path_buf()
+                        }));
                     }
                 }
             }
@@ -152,13 +164,21 @@ impl ProjectParameters {
         // filter out directory entries we don't want to copy
         let entries = WalkDir::new(&self.template_path)
             .into_iter()
-            .filter_entry(|e| !e.path().components().any(|c| c == Component::Normal(".git".as_ref())));
+            .filter_entry(|e| {
+                !e.path()
+                    .components()
+                    .any(|c| c == Component::Normal(".git".as_ref()))
+            });
 
         println!("Generating project...");
-        
+
         for entry in entries {
-            let entry = entry.map_err(|err| anyhow!(TemployError::FailedToReadEntry { source: err }))?;
-            let entry_path = entry.path().strip_prefix(&self.template_path).map_err(|_| anyhow!(TemployError::FailedToStripPrefix))?;
+            let entry =
+                entry.map_err(|err| anyhow!(TemployError::FailedToReadEntry { source: err }))?;
+            let entry_path = entry
+                .path()
+                .strip_prefix(&self.template_path)
+                .map_err(|_| anyhow!(TemployError::FailedToStripPrefix))?;
             let full_path = dir_path.join(entry_path);
 
             if entry_path == PathBuf::from("") {
@@ -178,8 +198,8 @@ impl ProjectParameters {
             let mut content = String::new();
 
             {
-                let mut file = File::open(filename)
-                    .context(format!("Unable to open {:#?}", filename))?;
+                let mut file =
+                    File::open(filename).context(format!("Unable to open {:#?}", filename))?;
                 file.read_to_string(&mut content)
                     .context(format!("Unable to read {:#?}", filename))?;
             }
@@ -193,4 +213,3 @@ impl ProjectParameters {
         Ok(())
     }
 }
-
