@@ -1,6 +1,5 @@
-use anyhow::anyhow;
-use clap::{App, Arg, ArgMatches};
-use crate::TemployError;
+use clap::{App, Arg};
+use temploy::{ProjectParameters, TemployError};
 
 /// Main function that initializes the CLI
 fn cli_init() -> Result<(), TemployError> {
@@ -28,7 +27,7 @@ fn cli_init() -> Result<(), TemployError> {
 
     match matches.subcommand() {
         ("generate", Some(params)) => ProjectParameters::from_cli(params)?.generate(),
-        _ => Err(anyhow!("Invalid command: {}", command)),
+        _ => Err(TemployError::InvalidCLICommand),
     }
 }
 
