@@ -1,6 +1,6 @@
 mod git;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 use heck::KebabCase;
 use serde::Deserialize;
@@ -52,7 +52,7 @@ pub enum TemployError {
 
 impl ProjectParameters {
     /// Initializes a `ProjectParameters` instance from CLI arguments 
-    pub fn from_cli(args: &ArgMatches) -> Result<Self, TemployError> {
+    pub fn from_cli(args: &ArgMatches) -> Result<Self> {
         let template_path = args.value_of("template").unwrap().to_string();
 
         Ok(ProjectParameters {
@@ -63,7 +63,7 @@ impl ProjectParameters {
     }
     
     /// Attempts to create the directory where the generated project will live 
-    fn create_dir(&self, dir_name: &str) -> Result<PathBuf, TemployError> {
+    fn create_dir(&self, dir_name: &str) -> Result<PathBuf> {
         let mut dir_path = self.target_dir
             .clone()
             .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| ".".into()));
@@ -71,19 +71,19 @@ impl ProjectParameters {
         dir_path = dir_path.join(dir_name.to_kebab_case());
 
         if dir_path.exists() {
-            return Err(TemployError::DirAlreadyExists { name: dir_path.to_string_lossy().to_string() });
+            return Err(anyhow!(TemployError::DirAlreadyExists { name: dir_path.to_string_lossy().to_string() }));
         }
 
         fs::create_dir_all(&dir_path)
-            .map_err(|_| TemployError::FailedToCreateDir)?;
+            .map_err(|_| anyhow!(TemployError::FailedToCreateDir))?;
 
         let path = fs::canonicalize(dir_path)
-            .map_err(|_| TemployError::FailedToCanonicalizeDir)?;
+            .map_err(|_| anyhow!(TemployError::FailedToCanonicalizeDir))?;
 
         Ok(path)
     }
 
-    pub fn generate(&self) -> Result<(), TemployError> {
+    pub fn generate(&self) -> Result<()> {
         let project_name = match &self.name {
             Some(name) => name.clone(),
             None => {
@@ -93,7 +93,7 @@ impl ProjectParameters {
                 if path.is_dir() {
                     path.join(DEFAULT_IDENT).to_string_lossy().to_string()
                 } else {
-                    return Err(TemployError::InvalidTemplatePath { path: path.to_path_buf() });
+                    return Err(anyhow!(TemployError::InvalidTemplatePath { path: path.to_path_buf() }));
                 }
             }
         };
@@ -104,8 +104,8 @@ impl ProjectParameters {
         println!("Generating project...");
         
         for entry in WalkDir::new(&self.template_path) {
-            let entry = entry.map_err(|err| TemployError::FailedToReadEntry { source: err })?;
-            let entry_path = entry.path().strip_prefix(&self.template_path).map_err(|_| TemployError::FailedToStripPrefix)?;
+            let entry = entry.map_err(|err| anyhow!(TemployError::FailedToReadEntry { source: err }))?;
+            let entry_path = entry.path().strip_prefix(&self.template_path).map_err(|_| anyhow!(TemployError::FailedToStripPrefix))?;
             let full_path = dir_path.join(entry_path);
 
             if entry_path == PathBuf::from("") {

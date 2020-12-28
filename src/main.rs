@@ -1,8 +1,9 @@
+use anyhow::{anyhow, Result};
 use clap::{App, Arg};
 use temploy::{ProjectParameters, TemployError};
 
 /// Main function that initializes the CLI
-fn cli_init() -> Result<(), TemployError> {
+fn cli_init() -> Result<()> {
     let matches = App::new("temploy")
         .subcommand(
             App::new("generate")
@@ -27,7 +28,7 @@ fn cli_init() -> Result<(), TemployError> {
 
     match matches.subcommand() {
         ("generate", Some(params)) => ProjectParameters::from_cli(params)?.generate(),
-        _ => Err(TemployError::InvalidCLICommand),
+        _ => Err(anyhow!(TemployError::InvalidCLICommand)),
     }
 }
 
