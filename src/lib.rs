@@ -1,6 +1,6 @@
 mod git;
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::ArgMatches;
 use heck::KebabCase;
 use serde::Deserialize;
@@ -45,6 +45,10 @@ pub enum TemployError {
     FailedToReadEntry { source: walkdir::Error },
     #[error("Failed to strip path prefix")]
     FailedToStripPrefix,
+    #[error("There was a problem cloning from GitHub")]
+    GithubCloneError,
+    #[error("Failed to authenticate via GitHub")]
+    GithubAuthenticationError,
     /// Represents all other cases of `std::io::Error`
     #[error(transparent)]
     IOError(#[from] std::io::Error),
@@ -125,11 +129,14 @@ impl ProjectParameters {
             let mut content = String::new();
 
             {
-                let mut file = File::open(filename)?;
-                file.read_to_string(&mut content)?;
+                let mut file = File::open(filename)
+                    .context(format!("Unable to open {:#?}", filename))?;
+                file.read_to_string(&mut content)
+                    .context(format!("Unable to read {:#?}", filename))?;
             }
 
-            fs::write(full_path, content)?;
+            fs::write(&full_path, content)
+                .context(format!("Unable to write to {:#?}", full_path))?;
         }
 
         println!("Project {} has been successfully generated!", project_name);
