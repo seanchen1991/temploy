@@ -5,6 +5,13 @@ authors = ["seanchen <skypemaster007@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "temploy"
+path = "src/main.rs"
+
+[lib]
+name = "temploy"
+path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.36"
@@ -14,3 +21,4 @@ heck = "0.3.2"
 serde = { version = "1.0.118", features = ["derive"] }
 thiserror = "1.0.22"
 walkdir = "2.3.1"
+md5 = "0.7.0"

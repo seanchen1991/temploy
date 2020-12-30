@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub(crate) fn clone(repo: &str, target_dir: &PathBuf) -> Result<()> {
+pub fn clone(repo: &str, target_dir: &PathBuf) -> Result<()> {
     if repo.contains("http") {
         Repository::clone(repo, &target_dir)?;
     } else {
