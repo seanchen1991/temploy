@@ -69,12 +69,10 @@ impl ProjectParameters {
             let temp_dir = env::temp_dir().join(format!("{:x}", md5::compute(&template_path)));
 
             if temp_dir.exists() {
-                fs::remove_dir_all(&temp_dir)
-                    .context("Failed to remove temporary directory")?;
+                fs::remove_dir_all(&temp_dir).context("Failed to remove temporary directory")?;
             }
 
-            fs::create_dir_all(&temp_dir)
-                .context("Failed to create temporary directory")?;
+            fs::create_dir_all(&temp_dir).context("Failed to create temporary directory")?;
 
             git::clone(&template_path, &temp_dir)
                 .map_err(|err| anyhow!(TemployError::GithubCloneError { source: err }))?;
