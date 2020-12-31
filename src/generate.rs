@@ -13,7 +13,7 @@ use std::{
 use thiserror::Error;
 use walkdir::{self, WalkDir};
 
-const DEFAULT_IDENT: &'static str = "-clone";
+const DEFAULT_IDENT: &str = "-clone";
 
 /// Holds all of the parameters for the new project that will be generated
 #[derive(Debug, Deserialize)]
@@ -70,11 +70,11 @@ impl ProjectParameters {
 
             if temp_dir.exists() {
                 fs::remove_dir_all(&temp_dir)
-                    .context(format!("Failed to remove temporary directory"))?;
+                    .context("Failed to remove temporary directory")?;
             }
 
             fs::create_dir_all(&temp_dir)
-                .context(format!("Failed to create temporary directory"))?;
+                .context("Failed to create temporary directory")?;
 
             git::clone(&template_path, &temp_dir)
                 .map_err(|err| anyhow!(TemployError::GithubCloneError { source: err }))?;
@@ -122,7 +122,7 @@ impl ProjectParameters {
                     // get the name of the github repo
                     let template_path_str = self.gh_repo_name.as_ref().unwrap().clone();
                     let mut repo_name = template_path_str
-                        .split("/")
+                        .split('/')
                         .last()
                         .ok_or_else(|| {
                             anyhow!(TemployError::InvalidGithubLink {
@@ -132,8 +132,8 @@ impl ProjectParameters {
                         .unwrap();
 
                     repo_name = repo_name
-                        .split(".")
-                        .nth(0)
+                        .split('.')
+                        .next()
                         .ok_or_else(|| {
                             anyhow!(TemployError::InvalidGithubLink {
                                 link: template_path_str.clone()
