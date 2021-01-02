@@ -31,6 +31,10 @@ pub enum TemployError {
     GithubCloneError { source: anyhow::Error },
     #[error("Failed to authenticate via GitHub")]
     GithubAuthenticationError,
+    #[error("Failed to write to a file: {filename:?}")]
+    FileWriteFail { filename: String },
+    #[error("Something went wrong when building the Docker image")]
+    DockerBuildFailed,
     /// Represents all other cases of `std::io::Error`
     #[error(transparent)]
     IOError(#[from] std::io::Error),

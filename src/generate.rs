@@ -1,7 +1,4 @@
-use crate::{
-    git, 
-    errors::TemployError,
-};
+use crate::{errors::TemployError, git};
 use anyhow::{anyhow, Context, Result};
 use clap::ArgMatches;
 use heck::KebabCase;
