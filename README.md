@@ -31,7 +31,7 @@ OPTIONS:
 
 ARGS:
     <template>    
-        Specify your template location
+        Specify the path to your template location
 ```
 
 If a `<name>` for the generated project is not specified, then the project is generated
@@ -44,3 +44,15 @@ current working directory.
 
 ## Deploying a Project
 
+Temploy currently supports deploying to Digital Ocean's App Platform. 
+
+Here are the available commands for `temploy deploy`:
+```
+USAGE:
+    temploy deploy <project-to-deploy>
+
+ARGS:
+    <project-to-deploy>
+        Specify the path to the project to be deployed
+```
+        

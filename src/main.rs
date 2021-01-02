@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use clap::{App, Arg};
-use temploy::{ProjectParameters, TemployError};
+use temploy::{GenerateParameters, DeployParameters, TemployError};
 
 /// Main function that initializes the CLI
 fn cli_init() -> Result<()> {
@@ -24,10 +24,20 @@ fn cli_init() -> Result<()> {
                         .takes_value(true),
                 ]),
         )
+        .subcommand(
+            App::new("deploy")
+                .about("Deploy a specified project.")
+                .args(&[
+                    Arg::with_name("project")
+                        .help("Specify project location")
+                        .required(true),
+                ]),
+        )
         .get_matches();
 
     match matches.subcommand() {
-        ("generate", Some(params)) => ProjectParameters::from_cli(params)?.generate(),
+        ("generate", Some(params)) => GenerateParameters::from_cli(params)?.generate(),
+        ("deploy", Some(params)) => DeployParameters::from_cli(params)?.deploy(),
         _ => Err(anyhow!(TemployError::InvalidCLICommand)),
     }
 }

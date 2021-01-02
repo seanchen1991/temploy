@@ -17,7 +17,7 @@ const DEFAULT_IDENT: &str = "-clone";
 
 /// Holds all of the parameters for the new project that will be generated
 #[derive(Debug, Deserialize)]
-pub struct ProjectParameters {
+pub struct GenerateParameters {
     target_dir: Option<PathBuf>,
     template_path: PathBuf,
     name: Option<String>,
@@ -56,8 +56,8 @@ pub enum TemployError {
     IOError(#[from] std::io::Error),
 }
 
-impl ProjectParameters {
-    /// Initializes a `ProjectParameters` instance from CLI arguments
+impl GenerateParameters {
+    /// Initializes a `GenerateParameters` instance from CLI arguments
     pub fn from_cli(args: &ArgMatches) -> Result<Self> {
         let mut gh_repo_name = None;
         let mut template_path = args.value_of("template").unwrap().to_string();
@@ -81,7 +81,7 @@ impl ProjectParameters {
             template_path = temp_dir.to_string_lossy().to_string();
         }
 
-        Ok(ProjectParameters {
+        Ok(GenerateParameters {
             target_dir: args.value_of("target-directory").map(PathBuf::from),
             template_path: PathBuf::from(template_path),
             name: args.value_of("name").map(String::from),
