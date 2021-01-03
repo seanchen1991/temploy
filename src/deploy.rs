@@ -4,7 +4,9 @@ use std::{fs::File, io::Write, path::PathBuf, process::Command};
 
 use crate::TemployError;
 
+const DEPLOY_SPEC: &str = "spec.yaml";
 const BUILD_OUTPUT: &str = "build-output.txt";
+const DEPLOY_OUTPUT: &str = "deploy-output.txt";
 
 pub struct DeployParameters {
     /// Path to the project to be deployed
@@ -22,6 +24,8 @@ impl DeployParameters {
 
     pub fn deploy(&self) -> Result<()> {
         self.build_image()?;
+        // TODO: make more platforms available as deployment options
+        self.digital_ocean_deploy()?;
 
         Ok(())
     }
@@ -35,11 +39,9 @@ impl DeployParameters {
             }));
         }
 
-        let mut build_cmd = Command::new("docker");
-
         println!("Building Docker image; this might take a few minutes...");
 
-        let output = build_cmd
+        let output = Command::new("docker")
             .arg("build")
             .arg(&self.to_deploy)
             .output()
@@ -53,7 +55,7 @@ impl DeployParameters {
                     filename: String::from(BUILD_OUTPUT)
                 })
             })?;
-            println!("Successfully build the Docker image! Take a look at the {} file for more information.", BUILD_OUTPUT);
+            println!("Successfully built the Docker image! Take a look at the {} file for more information.", BUILD_OUTPUT);
         } else {
             f.write_all(&output.stderr).map_err(|_| {
                 anyhow!(TemployError::FileWriteFail {
@@ -61,6 +63,40 @@ impl DeployParameters {
                 })
             })?;
             println!("Something went wrong when building the Docker image. Take a look at the {} file for more information.", BUILD_OUTPUT);
+        }
+
+        Ok(())
+    }
+
+    fn digital_ocean_deploy(&self) -> Result<()> {
+        println!("Deploying the image to Digital Ocean...");
+
+        let output = Command::new("doctl")
+            .current_dir(&self.to_deploy)
+            .arg("apps")
+            .arg("create")
+            .arg("--spec")
+            .arg(DEPLOY_SPEC)
+            .output()
+            .map_err(|_| anyhow!(TemployError::DODeployFailed))?;
+
+        let mut f = File::create(DEPLOY_OUTPUT)?;
+
+        if output.status.success() {
+            f.write_all(&output.stdout).map_err(|_| {
+                anyhow!(TemployError::FileWriteFail {
+                    filename: String::from(DEPLOY_OUTPUT)
+                })
+            })?;
+            println!("Successfully deployed to Digital Ocean! Take a look at the {} file for more information.", DEPLOY_OUTPUT);
+        } else {
+            f.write_all(&output.stderr).map_err(|_| {
+                anyhow!(TemployError::FileWriteFail {
+                    filename: String::from(DEPLOY_OUTPUT)
+                })
+            })?;
+            println!("Something went wrong when deploying to Digital Ocean. Take a look at the {} file for more information.", BUILD_OUTPUT);
+           
         }
 
         Ok(())
