@@ -1,5 +1,5 @@
 use assert_cmd::prelude::*;
-use assert_fs::TempDir;
+use assert_fs::{fixture::PathChild, TempDir};
 use predicates::prelude::*;
 use std::process::Command;
 
@@ -32,13 +32,19 @@ fn invalid_template_provided() -> Result<(), Error> {
 #[test]
 fn generates_template_correctly() -> Result<(), Error> {
     let path = "tests/test-data";
+    let name = "test-data";
     let temp = TempDir::new().unwrap();
     let mut cmd = Command::cargo_bin("temploy")?;
 
-    cmd.arg("generate").arg(path).arg("-d").arg(temp.path());
+    cmd.arg("generate")
+        .arg(path)
+        .arg("-d")
+        .arg(temp.path())
+        .arg("-n")
+        .arg(name);
 
     cmd.assert().success();
-    assert!(dir_diff::is_different(&temp.path(), path).unwrap());
+    assert!(!dir_diff::is_different(&temp.child(name).path(), path).unwrap());
 
     temp.close().unwrap();
 
