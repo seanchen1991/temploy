@@ -37,13 +37,13 @@ pub enum TemployError {
     /// Represents a problem when attempting to clone a repo from github
     #[error("There was a problem cloning from GitHub")]
     GithubCloneError { source: anyhow::Error },
-    /// Represents a failure when attempting to authenticate via github 
+    /// Represents a failure when attempting to authenticate via github
     #[error("Failed to authenticate via GitHub")]
     GithubAuthenticationError,
     /// Represents a failure when attempting to write to the specified file
     #[error("Failed to write to a file: {filename:?}")]
     FileWriteFail { filename: String },
-    /// Represents a failure when attempting to build a Docker image 
+    /// Represents a failure when attempting to build a Docker image
     #[error("Something went wrong when building the Docker image")]
     DockerBuildFailed,
     /// Represents a failure when attempting to deploy to Digital Ocean

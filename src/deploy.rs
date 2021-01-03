@@ -96,7 +96,6 @@ impl DeployParameters {
                 })
             })?;
             println!("Something went wrong when deploying to Digital Ocean. Take a look at the {} file for more information.", BUILD_OUTPUT);
-           
         }
 
         Ok(())
