@@ -78,7 +78,7 @@ impl GenerateParameters {
 
         Ok(path)
     }
-    
+
     /// Generates a new project from the specified template directory
     pub fn generate(&self) -> Result<()> {
         let project_name: String = match &self.name {
