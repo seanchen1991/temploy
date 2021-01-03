@@ -55,4 +55,8 @@ ARGS:
     <project-to-deploy>
         Specify the path to the project to be deployed
 ```
-        
+
+Currently, any project that you wish to deploy to Digital Ocean must have a valid 
+Dockerfile for building the Docker image as well as a `spec.yaml` file for 
+specifying necessary details about the deployment process; both of these must be
+located at the project's root. 
