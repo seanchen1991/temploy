@@ -5,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// Clones the specified github repo into the target directory
 pub fn clone(repo: &str, target_dir: &PathBuf) -> Result<()> {
     if repo.contains("http") {
         Repository::clone(repo, &target_dir)?;
